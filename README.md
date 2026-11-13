@@ -1,6 +1,6 @@
 # HinglishGuard
 
-**Self-hosted moderation research for Hindi and Hinglish: trained classifiers for abuse and religious hate, plus a local tool-calling agent that checks disguised spellings and conversation context before deciding.**
+**A Discord moderation bot for Hindi and Hinglish.** It watches a server's messages, removes abuse and religious hate with a warning, and sends anything uncertain to a human moderator. Underneath are fine-tuned classifiers plus a local tool-calling agent that decodes disguised slurs ("ch*tiya", "c h u t i y a") and reads the message being replied to.
 
 ![CI](../../actions/workflows/ci.yml/badge.svg) ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.13-blue) ![Models](https://img.shields.io/badge/models-HingRoBERTa%20%C2%B7%20XLM--R%20%C2%B7%20TF--IDF-purple) ![Agent](https://img.shields.io/badge/agent-Qwen3--4B%20via%20Ollama-black)
 
@@ -8,7 +8,28 @@
 
 Moderating Hinglish is hard for off-the-shelf tools: it mixes scripts, spells the same word many ways, and disguises slurs ("ch*tiya", "c h u t i y a", "ch0tiya"). HinglishGuard trains its own classifiers on two research datasets, then lets a small local LLM *investigate* (normalise spellings, read the parent comment, consult policy) under strict, validated tool rules. Anything uncertain goes to a human reviewer instead of being guessed.
 
-> Research prototype. Not a production moderation service. See [research limits](#research-limits-and-sources).
+> Research prototype, tested in a live Discord server. Not a production moderation service. See [research limits](#research-limits-and-sources).
+
+## Live on Discord
+
+```
+member posts / edits a message
+        │
+        ▼
+HinglishGuard bot (discord.py, queue of ≤500 messages, every edit re-checked)
+        │
+        ├─ abuse classifier + religious-hate classifier (calibrated, ≥90%-precision gates)
+        ├─ local Qwen3-4B agent: spelling variants, replied-to context, policy
+        ▼
+   FLAG ──► delete message + respectful warning in channel
+   HUMAN_REVIEW ──► kept, logged for a moderator
+   NO_ISSUE ──► nothing happens
+        │
+        ▼
+audit log (SQLite): every message, revision, verdict and evidence
+```
+
+**Live test (4 Nov 2026, a test server):** 19 messages handled in one session. **7 removed** with a warning posted, **12 routed to human review**, 0 operational errors. Configuration is per server and channel; deletion by the LLM alone is off by default, so only classifier-confirmed abuse is removed automatically. Setup and options: [Discord bot](#discord-bot).
 
 ## Results
 

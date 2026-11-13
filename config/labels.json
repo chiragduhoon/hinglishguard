@@ -1,0 +1,18 @@
+{
+  "hot": {
+    "labels": {"0": "Non-offensive", "1": "Hate-inducing", "2": "Abusive"},
+    "positive_labels": ["1", "2"],
+    "mapping_evidence": "HOT file counts: 0=1121, 1=303, 2=1765; matched to Table 2 of Mathur et al. 2018. Repository README identifies this paper. Manual annotation review remains required.",
+    "citation": "Mathur et al. (2018), Did you offend me? https://aclanthology.org/W18-5118/",
+    "usage": "Source README specifies research purposes and citation; do not redistribute raw data automatically."
+  },
+  "thar": {
+    "text_column": "Comment",
+    "label_column": "SubTask1",
+    "labels": {"AntiReligion": "AntiReligion", "Non-AntiReligion": "Non-AntiReligion"},
+    "positive_labels": ["AntiReligion"],
+    "mapping_evidence": "Literal SubTask1 values in THAR CSV and definitions in source README; source annotation is not a universal moderation policy.",
+    "citation": "THAR: Targeted Hate Speech Against Religion. https://github.com/aakash-dl/THAR",
+    "usage": "No standalone data license observed in source repository; preserve provenance and avoid raw-data redistribution."
+  }
+}

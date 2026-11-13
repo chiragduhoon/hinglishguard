@@ -1,0 +1,10 @@
+{
+  "guilds": {
+    "REPLACE_WITH_SERVER_ID": ["REPLACE_WITH_CHANNEL_ID"]
+  },
+  "backend": "transformer",
+  "max_queue": 500,
+  "community_profanity_rule": false,
+  "community_llm_can_delete": false,
+  "send_warnings": false
+}

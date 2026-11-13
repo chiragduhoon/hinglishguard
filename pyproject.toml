@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hinglishguard"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["pandas>=2.2,<3", "numpy>=2,<3", "scikit-learn==1.6.0", "scipy>=1.14,<2", "joblib>=1.4,<2", "pydantic>=2.10,<3", "httpx>=0.28,<1", "streamlit>=1.41,<2"]
+
+[project.optional-dependencies]
+training = ["torch>=2.5,<3", "transformers>=4.48,<5", "accelerate>=1.2,<2", "sentencepiece>=0.2,<1"]
+dev = ["pytest>=8,<10", "ruff>=0.8,<1"]
+presentation = ["matplotlib>=3.9,<4", "python-pptx>=1,<2"]
+demo = ["playwright>=1.50,<2"]
+discord = ["discord.py>=2.6,<3"]
+
+[project.scripts]
+hinglishguard = "hinglishguard.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["hinglishguard*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+extend-exclude = [".venv", ".test-*"]
+
+[tool.ruff.lint]
+# Real-bug rules only (syntax errors, undefined names, unused imports/variables).
+# Style rules are deliberately off until the codebase is reformatted in one dedicated change.
+select = ["E9", "F"]

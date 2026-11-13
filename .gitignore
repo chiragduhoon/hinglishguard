@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+data/raw/
+data/processed/
+artifacts/
+*.sqlite*
+.env
+.test-*/
+config/discord.local.json
+config/discord.token
+
+# generated from HOT/THAR text (research-only data): rebuild with `python -m hinglishguard.cli challenge-drafts`
+data/challenges/spelling.json

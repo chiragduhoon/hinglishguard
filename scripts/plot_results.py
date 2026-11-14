@@ -20,6 +20,7 @@ MODELS = [  # (folder, label, added in the HingRoBERTa/ensemble update?)
     ("ensemble", "TF-IDF + XLM-RoBERTa", True),
     ("hingroberta", "HingRoBERTa", True),
     ("ensemble-hing", "TF-IDF + HingRoBERTa", True),
+    ("best", "Final: chosen on validation", True),
 ]
 TASKS = [("hot", "HOT · offensive language (3 classes, n=443)"),
          ("thar", "THAR · religious hate (2 classes, n=1,730)")]
@@ -38,19 +39,18 @@ def load(task, folder):
 def draw(mode):
     t = THEMES[mode]
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10.5})
-    fig, axes = plt.subplots(1, 2, figsize=(11, 3.6), sharey=True, facecolor=t["surface"])
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.1), sharey=True, facecolor=t["surface"])
     for ax, (task, title) in zip(axes, TASKS):
         ax.set_facecolor(t["surface"])
-        rows = [(label, new, *load(task, folder)) for folder, label, new in MODELS]
-        best = max(r[2] for r in rows)
-        for y, (label, new, f1, (lo, hi)) in enumerate(rows):
+        rows = [(folder, label, new, *load(task, folder)) for folder, label, new in MODELS]
+        for y, (folder, label, new, f1, (lo, hi)) in enumerate(rows):
             color = t["new"] if new else t["old"]
             ax.plot([lo, hi], [y, y], color=color, linewidth=2, solid_capstyle="round", zorder=2)
             ax.scatter([f1], [y], s=80, marker="o" if new else "s", color=color,
                        edgecolors=t["surface"], linewidths=2, zorder=3)
-            if f1 == best or label == "XLM-RoBERTa":  # selective direct labels: baseline and best only
+            if folder == "best" or label == "XLM-RoBERTa":  # selective direct labels: baseline and final system only
                 ax.annotate(f"{f1:.3f}", (hi, y), xytext=(6, 0), textcoords="offset points",
-                            va="center", color=t["ink"], fontweight="bold" if f1 == best else "normal")
+                            va="center", color=t["ink"], fontweight="bold" if folder == "best" else "normal")
         ax.set_title(title, loc="left", color=t["ink"], fontsize=11, pad=10)
         ax.set_xlim(0.66, 0.89)
         ax.xaxis.grid(True, color=t["grid"], linewidth=0.8)

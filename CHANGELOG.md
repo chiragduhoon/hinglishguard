@@ -5,6 +5,18 @@ Newest entries first. Things that were deliberately *not* changed are listed wit
 
 ---
 
+## 2026-11-14 (later) — Validation-selected final systems, extra training data
+
+**Final numbers (selected on validation from 12 pre-registered candidates; test scored once):** HOT 0.800 (95% CI 0.754–0.848), hate-inducing F1 0.681, 93% auto-decided; THAR 0.790 (0.767–0.808), 46% auto-decided. HOT = 3 HingRoBERTa seeds; THAR = HingRoBERTa + HingRoBERTa-mixed + MuRIL.
+
+**Correction:** the earlier 0.806 (TF-IDF + HingRoBERTa) was the best of five configurations compared on the test set, so it is slightly optimistic; its validation score (0.771) would not have selected it. README now quotes 0.800.
+
+**Extra data:** `scripts/intermediate_train.py` pre-trains HingRoBERTa on 42,523 comments from TRAC-1 Hindi (Apache-2.0) and MACD Hindi (no licence stated; research use, never redistributed). 2 comments matching HOT/THAR validation/test text were removed. THAR validation improved 0.768 → 0.785 for the single model, but no final ensemble selected it.
+
+**New:** `scripts/select_ensemble.py`, `scripts/intermediate_train.py`; plot includes the final system.
+
+---
+
 ## 2026-11-14 — Hinglish encoder, ensembles, publishing
 
 **Summary:** ran the two planned model experiments, generalised ensembles, and prepared the repository for GitHub. 41/41 tests pass and `ruff check .` is clean.

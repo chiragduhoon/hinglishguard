@@ -33,29 +33,30 @@ audit log (SQLite): every message, revision, verdict and evidence
 
 ## Results
 
-Held-out test sets that no model or threshold ever saw during training or tuning. Dots are macro-F1; whiskers are 1,000-round bootstrap 95% intervals.
+Held-out test sets. Every choice (model, ensemble members, thresholds) was made on the validation split; the final system for each task was picked from 12 pre-registered candidates by validation score and then scored on test **once**. Dots are macro-F1; whiskers are 1,000-round bootstrap 95% intervals.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/results-dark.png">
-  <img alt="Test macro-F1 with 95% intervals. HOT: TF-IDF 0.742, XLM-RoBERTa 0.744, TF-IDF+XLM-R 0.773, HingRoBERTa 0.789, TF-IDF+HingRoBERTa 0.806. THAR: 0.729, 0.761, 0.774, 0.779, 0.781." src="docs/media/results-light.png">
+  <img alt="Test macro-F1 with 95% intervals. Final validation-selected systems: HOT 0.800, THAR 0.790, versus XLM-RoBERTa baselines 0.744 and 0.761." src="docs/media/results-light.png">
 </picture>
 
-| Model | HOT macro-F1 (95% CI) | HOT *hate-inducing* F1 | HOT auto-decided | THAR macro-F1 (95% CI) | THAR auto-decided |
-|---|---|---|---|---|---|
-| TF-IDF + logistic regression | 0.742 (0.685–0.793) | 0.575 | 76% | 0.729 (0.707–0.749) | 16% |
-| XLM-RoBERTa | 0.744 (0.691–0.791) | 0.623 | 78% | 0.761 (0.740–0.781) | 15% |
-| TF-IDF + XLM-RoBERTa ensemble | 0.773 (0.722–0.820) | 0.638 | 86% | 0.774 (0.754–0.792) | 35% |
-| HingRoBERTa | 0.789 (0.739–0.834) | 0.667 | 93% | 0.779 (0.757–0.797) | 38% |
-| **TF-IDF + HingRoBERTa ensemble** | **0.806 (0.756–0.852)** | **0.696** | 89% | **0.781 (0.760–0.799)** | **43%** |
+| | Before | **Final system** |
+|---|---|---|
+| **HOT** macro-F1 (3 classes, 443 test comments) | 0.744 (XLM-RoBERTa) | **0.800** (95% CI 0.754–0.848) |
+| HOT *hate-inducing* F1, the hardest class | 0.623 | **0.681** |
+| **THAR** macro-F1 (binary, 1,730 test comments) | 0.761 (XLM-RoBERTa) | **0.790** (95% CI 0.767–0.808) |
+| Comments decided automatically at ≥90% validation precision | HOT 78% · THAR 15% | HOT **93%** · THAR **46%** |
 
-HOT: 443 test comments, 3 classes (non-offensive / hate-inducing / abusive). THAR: 1,730 test comments, binary anti-religion. 14,490 records after de-duplication, split so near-duplicates never cross train/test.
+Final systems: **HOT** = 3 HingRoBERTa models (different seeds) averaged. **THAR** = HingRoBERTa + HingRoBERTa-mixed + MuRIL averaged. 14,490 records after de-duplication, split so near-duplicates never cross train/test.
 
-**What changed and what it means**
+**What worked, what didn't**
 
-- **A Hinglish-pretrained encoder beats a general multilingual one.** Swapping XLM-RoBERTa for [HingRoBERTa](https://huggingface.co/l3cube-pune/hing-roberta) (same size, pretrained on Hinglish tweets) lifted HOT from 0.744 to 0.789 and the hardest class, *hate-inducing* (44 test examples), from 0.62 to 0.67. Training takes about 5½ minutes on one 16 GB GPU.
-- **TF-IDF and the transformer make different mistakes, so averaging their calibrated probabilities helps.** The best system reaches 0.806 on HOT and 0.696 on the hate class.
-- **Far more decisions can be automated safely.** "Auto-decided" is the share of comments the system may decide without a human because its score passes gates that require ≥90% precision and ≥30 supporting examples. On THAR this rose from 15% to 43%, so the share left for human review fell from 85% to 57% (about two-thirds as many comments).
-- **Honest caveats.** On HOT the intervals still overlap (443 test comments is small), so the gain over XLM-RoBERTa is likely but not proven. Auto-decided rates are measured on the validation set the gates were fitted on, so treat them as estimates. The agent's own benefit is **not yet benchmarked**: its challenge sets are drafts awaiting human review (see [Evaluation and review work](#evaluation-and-review-work)).
+- **A Hinglish-pretrained encoder beats a general multilingual one.** Swapping XLM-RoBERTa for [HingRoBERTa](https://huggingface.co/l3cube-pune/hing-roberta) lifted HOT from 0.744 to 0.789 on its own.
+- **Ensembles of diverse models help most.** Seeds and different encoders make different mistakes; averaging their calibrated probabilities gives the final gains and far higher automatic coverage. On THAR the share of comments left for human review fell from 85% to 54%.
+- **Extra training data helped one model but not the final system.** Pre-training HingRoBERTa on 42,523 extra labelled comments ([TRAC-1](https://github.com/kmi-linguistics/trac-1) Hindi aggression + [MACD](https://github.com/ShareChatAI/MACD) Hindi abuse, with HOT/THAR test duplicates removed) raised its THAR validation score from 0.768 to 0.785, but neither task's best ensemble selected it. Those datasets label "aggression" and "abuse" differently from HOT/THAR.
+- **MuRIL alone scored poorly on HOT** (validation 0.61), the Roman-script task; it only helps inside the THAR ensemble.
+
+**Honest caveats.** HOT's test set is small, so its interval is wide (±0.05). An earlier exploratory run reported 0.806 for TF-IDF + HingRoBERTa; that was the best of five configurations compared *on the test set*, so it is slightly optimistic. The validation-selected 0.800 is the number to quote. Auto-decision rates are measured on validation. The agent's own benefit is **not yet benchmarked**: its challenge sets are drafts awaiting human review (see [Evaluation and review work](#evaluation-and-review-work)).
 
 ## How it works
 
@@ -156,11 +157,18 @@ python -m hinglishguard.cli calibrate-ensemble --task hot --members tfidf,hingro
 # Held-out evaluation (writes evaluation.json with macro-F1 and its bootstrap 95% interval)
 python -m hinglishguard.cli evaluate --task hot --backend ensemble-hing --device cuda
 
+# Extra-data intermediate training (TRAC-1 + MACD Hindi, test duplicates removed), then fine-tune as usual
+python scripts/intermediate_train.py --device cuda
+python -m hinglishguard.cli train --task thar --backend transformer --device cuda --base-model artifacts/_intermediate/hing-aux --output-name hingaux
+
+# Pick the final system: 12 pre-registered candidates scored on validation; only the winner is scored on test
+python scripts/select_ensemble.py --task hot --device cuda      # -> artifacts/hot/best (+ selection.json)
+
 # Results chart for this README
 python scripts/plot_results.py
 ```
 
-Any trained folder under `artifacts/<task>/` (for example `hingroberta` or `ensemble-hing`) appears automatically in the Streamlit sidebar, the evaluation screen and every `--backend` option. Still open: seed variance (`--seed 13`, `--seed 7`) and MuRIL as a third encoder.
+Any trained folder under `artifacts/<task>/` (for example `hingroberta` or `ensemble-hing`) appears automatically in the Streamlit sidebar, the evaluation screen and every `--backend` option. Seeds 13 and 7, HingRoBERTa-mixed and MuRIL were trained for the selection step; per-model validation scores are in `artifacts/<task>/_reports/`.
 
 ### Settings
 

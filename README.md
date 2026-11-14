@@ -12,6 +12,10 @@ Moderating Hinglish is hard for off-the-shelf tools: it mixes scripts, spells th
 
 ## Live on Discord
 
+![GUARD in a Discord channel: abusive messages are removed and replaced by a respectful warning, while "Mujhe ye movie bahut acchi lagi" is left alone](docs/media/discord-live.png)
+
+<sub>Usernames blurred. Removed messages are no longer visible; GUARD's warning appears where each one was taken down. In the 14 Nov session, "Tu ch\*tiya hai, chup baith" was classified Abusive and deleted within ~3 s, and "Mujhe ye movie bahut acchi lagi" was classified Non-offensive and kept (from the bot's audit log).</sub>
+
 ```
 member posts / edits a message
         │
@@ -29,7 +33,7 @@ HinglishGuard bot (discord.py, queue of ≤500 messages, every edit re-checked)
 audit log (SQLite): every message, revision, verdict and evidence
 ```
 
-**Live test (4 Nov 2026, a test server):** 19 messages handled in one session. **7 removed** with a warning posted, **12 routed to human review**, 0 operational errors. Configuration is per server and channel; deletion by the LLM alone is off by default, so only classifier-confirmed abuse is removed automatically. Setup and options: [Discord bot](#discord-bot).
+**Live tests (test server):** 4 Nov: 19 messages, **7 removed** with a warning, **12 routed to human review**. 14 Nov, with the final validation-selected models: abusive message removed, normal message kept. No operational errors in the audit log. Configuration is per server and channel; deletion by the LLM alone is off by default, so only classifier-confirmed abuse is removed automatically. Setup and options: [Discord bot](#discord-bot).
 
 ## Results
 
